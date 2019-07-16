@@ -32,7 +32,7 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
 
-size_t strlen(const char* str)
+size_t strlen(const char *str)
 {
 	size_t len = 0;
 	while (str[len])
@@ -50,9 +50,9 @@ uint16_t* terminal_buffer;
 
 #define TAB_SIZE 8
 
-#define INCR_COL(x) do { \
+#define incr_col(x) do { \
 	if (x > VGA_WIDTH) { \
-		INCR_ROW(1); \
+		incr_row(1); \
 		terminal_column = (VGA_WIDTH + x) - VGA_WIDTH; \
 	} \
 	else { \
@@ -60,7 +60,7 @@ uint16_t* terminal_buffer;
 	} \
 } while(0)
 
-#define INCR_ROW(y) do { \
+#define incr_row(y) do { \
 	if (y > VGA_HEIGHT) \
 		terminal_row = 0; \
 	else \
@@ -98,11 +98,11 @@ void terminal_putchar(char c)
 	/* Process non-printables (<32 decimal) */
 	switch(c) {
 		case '\n':
-			INCR_ROW(1);
+			incr_row(1);
 			terminal_column = 0;
 			return;
 		case '\t':
-			INCR_COL(TAB_SIZE);
+			incr_col(TAB_SIZE);
 			return;
 		case '\r':
 			terminal_column = 0;
@@ -113,7 +113,7 @@ void terminal_putchar(char c)
 
 	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 
-	INCR_COL(1);
+	incr_col(1);
 }
 
 void terminal_write(const char* data, size_t size)

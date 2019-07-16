@@ -103,6 +103,4 @@ void gdt_init()
 	/* Reload segments */
 	_reload_segments();
 
-	/* Go to protected mode */
-//	_go_to_protected();
 }
