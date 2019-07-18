@@ -2,10 +2,9 @@
 
 Operating system development.
 
-Currently boots in x86 real-mode, with segmented memory.
+Currently boots in x86 protected-mode, with segmented memory.
 
 TODO:
-  1) Go to protected mode
-  2) Enable interrupts
-  3) PS/2 Keyboard driver
-  4) Mouse driver
+  1) Enable interrupts
+  2) PS/2 Keyboard driver
+  3) Mouse driver
