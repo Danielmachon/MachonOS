@@ -21,6 +21,21 @@
 #define ICW4_BUF_MASTER	0x0C	    	/* Buffered mode/master */
 #define ICW4_SFNM	    0x10		    /* Special fully nested (not) */
 
+/* 
+IRQ 0 ‒ system timer
+IRQ 1 — keyboard controller
+IRQ 3 — serial port COM2
+IRQ 4 — serial port COM1
+IRQ 5 — line print terminal 2
+IRQ 6 — floppy controller
+IRQ 7 — line print terminal 1
+IRQ 8 — RTC timer
+IRQ 12 — mouse controller
+IRQ 13 — math co-processor
+IRQ 14 — ATA channel 1
+IRQ 15 — ATA channel 2 
+*/
+
 /*
  * Send end-of-interrupt to pic.
  *
@@ -44,6 +59,10 @@ void pic_eoi(uint8_t irq)
  *     Its vector offset. (ICW2)
  *     Tell it how it is wired to master/slaves. (ICW3)
  *     Gives additional information about the environment. (ICW4)
+ *
+ * It is necessary to wait a small amount of time, to let the pic,
+ * process the word, on some older platforms - hence the use of,
+ * outb_wait (call to outb followed by io_wait).
  */
 static void pic_remap()
 {
@@ -51,24 +70,49 @@ static void pic_remap()
     uint8_t m1, m2;
 
     m1 = inb(PIC1_DATA);
-    //m2 = inb(PIC2_DATA);
+    m2 = inb(PIC2_DATA);
 
     /* Initialize the remapping */
-	//outb_wait(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
-	//outb_wait(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
+	outb_wait(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
+	outb_wait(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
 
     /* Send words */
-	//outb_wait(PIC1_DATA, PIC1);                    // ICW2: Master PIC vector offset
-	//outb_wait(PIC2_DATA, PIC2);                    // ICW2: Slave PIC vector offset
-	//outb_wait(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-	//outb_wait(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
-    //outb_wait(PIC1_DATA, ICW4_8086);               // ICW4:
-	//outb_wait(PIC2_DATA, ICW4_8086);               // ICW4:  
+	outb_wait(PIC1_DATA, PIC1);                    // ICW2: Master PIC vector offset
+	outb_wait(PIC2_DATA, PIC2);                    // ICW2: Slave PIC vector offset
+	outb_wait(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+	outb_wait(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
+    outb_wait(PIC1_DATA, ICW4_8086);               // ICW4:
+	outb_wait(PIC2_DATA, ICW4_8086);               // ICW4:  
 
 
     /* Restore masks */
-    //outb_wait(PIC1_DATA, m1); 
-	//outb_wait(PIC2_DATA, m2);
+    outb_wait(PIC1_DATA, m1); 
+	outb_wait(PIC2_DATA, m2);
+}
+
+/*
+ * Mask specific interrupt.
+ *
+ * @irq: irq to be masked.
+ */
+void pic_mask(uint8_t irq)
+{
+    uint16_t port;
+    uint8_t imr;
+
+    if (irq <= 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq -= 8;
+    }
+
+    /* Read the IMR register */
+    imr = inb(port);
+    imr |= (1 << irq);
+
+    /* Write the irq to be masked */
+    outb(port, imr);
 }
 
 void pic_init()
