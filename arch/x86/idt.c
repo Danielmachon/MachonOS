@@ -43,14 +43,32 @@ struct idt_ptr
 struct idt_entry *idt_addr;
 
 /*
- * idt_register
+ * Register a single new interrupt with the,
+ * interrupt descriptor table.
+ *
+ * @cb:  function callback to register.
+ * @irq: interrupt request.
+ */
+void idt_register_irq(uint8_t irq, uint32_t cb)
+{
+	*(uint16_t*)(idt_addr + 8 * irq + 0) = (uint16_t)(cb & 0x0000ffff);
+	*(uint16_t*)(idt_addr + 8 * irq + 2) = (uint16_t)0x8;
+	*(uint8_t*) (idt_addr + 8 * irq + 4) = 0x00;
+	*(uint8_t*) (idt_addr + 8 * irq + 5) = 0x8e;//0 | IDT_32BIT_INTERRUPT_GATE | IDT_PRESENT;
+	*(uint16_t*)(idt_addr + 8 * irq + 6) = (uint16_t)((cb & 0xffff0000) >> 16);
+}
+
+/*
+ * idt_entry_new
  *
  * Register a single new interrupt with the,
  * interrupt descriptor table.
  *
+ * @irq:       interrupt request.
  * @new_entry: New entry to be registered.
- */
-void idt_register(const struct idt_entry *new_entry)
+ * @ret: struct idt_entry returned.
+
+static const struct idt_entry* idt_entry_new(uint8_t irq, const struct idt_entry *new_entry)
 {
 	static uint8_t idx;
 	struct idt_entry *entry;
@@ -62,6 +80,7 @@ void idt_register(const struct idt_entry *new_entry)
 	entry->flags = new_entry->flags;
 	entry->base_high = new_entry->base_high;
 }
+*/
 
 /* Assembly function */
 extern void _idt_load();

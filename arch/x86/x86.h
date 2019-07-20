@@ -6,12 +6,16 @@ void x86_init();
 
 /* idt.c */
 extern void idt_init();
+extern void idt_register_irq(uint8_t, uint32_t);
 
 /* gdt.c */
 extern void gdt_init();
 
 /* pic.c */
 extern void pic_init();
+
+/* cpu.s */
+extern void _irq_handler();
 
 /* io.s */
 extern void _io_port_write_byte(uint16_t, uint8_t);

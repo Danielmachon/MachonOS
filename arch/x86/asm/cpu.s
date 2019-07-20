@@ -63,3 +63,16 @@ _go_to_protected:
 	pop %ebp
 	pop %eax
 	ret
+
+// Handle interrupts
+.global irq_handler
+.global _irq_handler
+.type _irq_handler, @function
+_irq_handler:
+	push %ebp
+	movl %esp, %ebp
+	cld
+	call irq_handler
+	movl %ebp, %esp
+	pop %ebp
+	ret
