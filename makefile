@@ -1,19 +1,63 @@
-CC = i686-elf-gcc
+MAKE_DIR = $(PWD)
+ISODIR = $(PWD)/isodir
+BINDIR = $(PWD)/isodir/boot
 
-main: kernel.c term.c arch/x86/idt.c arch/x86/gdt.c arch/x86/pic.c arch/x86/int.c linker.ld arch/x86/asm/boot.s arch/x86/asm/cpu.s arch/x86/asm/io.s
-	$(CC) -c arch/x86/int.c -o int.o -std=gnu99 -ffreestanding -Wall -Wextra
-	i686-elf-as arch/x86/asm/boot.s -o boot.o
-	i686-elf-as arch/x86/asm/cpu.s -o cpu.o
-	i686-elf-as arch/x86/asm/io.s -o io.o
-	$(CC) -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -Wall -Wextra
-	$(CC) -c term.c -o term.o -std=gnu99 -ffreestanding -Wall -Wextra
-	$(CC) -c arch/x86/idt.c -o idt.o -std=gnu99 -ffreestanding -Wall -Wextra
-	$(CC) -c arch/x86/gdt.c -o gdt.o -std=gnu99 -ffreestanding -Wall -Wextra
-	$(CC) -c arch/x86/pic.c -o pic.o -std=gnu99 -ffreestanding -Wall -Wextra
-	$(CC) -c arch/x86/x86.c -o x86.o -std=gnu99 -ffreestanding -Wall -Wextra
+AS = i686-elf-as
+CC = i686-elf-gcc
+CFLAGS =-std=gnu99 -ffreestanding -Wall -Wextra
+
+ARCH_SRC_DIR := $(MAKE_DIR)/arch/x86
+ARCH_ASM_DIR := $(MAKE_DIR)/arch/x86/asm
+
+INC=
+
+all: os
+
+# top
+
+kernel.o: $(PWD)/kernel.c
+	$(CC) -c $(CFLAGS) $(PWD)/kernel.c $(INC)
+
+term.o: $(PWD)/term.c
+	$(CC) -c $(CFLAGS) $(PWD)/term.c $(INC)
+
+# arch
+
+gdt.o: $(ARCH_SRC_DIR)/gdt.c
+	$(CC) -c $(CFLAGS) $(ARCH_SRC_DIR)/gdt.c $(INC)
+
+idt.o: $(ARCH_SRC_DIR)/idt.c
+	$(CC) -c $(CFLAGS) $(ARCH_SRC_DIR)/idt.c $(INC)
+	
+int.o: $(ARCH_SRC_DIR)/int.c
+	$(CC) -c $(CFLAGS) $(ARCH_SRC_DIR)/int.c $(INC)
+
+pic.o: $(ARCH_SRC_DIR)/pic.c
+	$(CC) -c $(CFLAGS) $(ARCH_SRC_DIR)/pic.c $(INC)
+
+x86.o: $(ARCH_SRC_DIR)/x86.c
+	$(CC) -c $(CFLAGS) $(ARCH_SRC_DIR)/x86.c $(INC)
+
+# asm
+
+boot.o: $(ARCH_ASM_DIR)/boot.s
+	$(AS) arch/x86/asm/boot.s -o boot.o
+
+cpu.o: $(ARCH_ASM_DIR)/cpu.s
+	$(AS) arch/x86/asm/cpu.s -o cpu.o
+
+io.o: $(ARCH_ASM_DIR)/io.s
+	$(AS) arch/x86/asm/io.s -o io.o
+
+os: iso
+
+iso: boot.o int.o io.o idt.o gdt.o pic.o cpu.o kernel.o term.o x86.o
 	$(CC) -T linker.ld -o MachonOS.bin -ffreestanding -nostdlib boot.o int.o io.o idt.o gdt.o pic.o cpu.o kernel.o term.o x86.o -lgcc
-	cp MachonOS.bin isodir/boot
+	cp MachonOS.bin $(BINDIR)
 	grub-mkrescue -o MachonOS.iso isodir
 
-clean:
-	rm ./*.o ./*.bin ./*.iso ./isodir/boot/*.bin
+clean: 
+	rm *.o
+	
+run:
+	qemu-system-i386 -kernel $(BINDIR)/MachonOS.bin

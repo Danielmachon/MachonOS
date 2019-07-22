@@ -67,10 +67,10 @@ struct gdt_ptr gdt_ptr;
 static void gdt_set(uint32_t num, uint32_t base, uint32_t limit, uint32_t access, uint32_t gran)
 {
 	gdt_addr[num].base_low = (base & 0xFFFF);
-        gdt_addr[num].base_middle = (base >> 16) & 0xFF;
-        gdt_addr[num].base_high = (base >> 24) & 0xFF;
+    gdt_addr[num].base_middle = (base >> 16) & 0xFF;
+    gdt_addr[num].base_high = (base >> 24) & 0xFF;
 	gdt_addr[num].limit_low = (limit & 0xFFFF);
-        gdt_addr[num].granularity = (limit >> 16) & 0x0F;
+    gdt_addr[num].granularity = (limit >> 16) & 0x0F;
 	gdt_addr[num].granularity |= (gran & 0xF0);
 	gdt_addr[num].access = access;
 }
@@ -94,8 +94,6 @@ void gdt_init()
 	gdt_set(0, 0, 0, 0, 0);
 	gdt_set(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
 	gdt_set(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
-
-	asm volatile("cli");
 
 	/* Load the GDT */
 	_gdt_load(gdt_ptr);

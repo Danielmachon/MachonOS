@@ -44,7 +44,7 @@ _io_port_write_word:
 	movl 8(%esp), %edx      // port id
 	movl 12(%esp), %eax     // value
 	outw %ax, %dx           // write value to port
-	pop %ebx
+	pop %edx
 	pop %eax
 	movl %ebp, %esp
 	pop %ebp
@@ -108,3 +108,4 @@ _io_wait:
 	outb %al, $0x80         // Dummy write to port 0x80
 	movl %ebp, %esp
 	pop %ebp
+	ret

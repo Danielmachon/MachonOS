@@ -3,19 +3,23 @@
 #include <stdint.h>
 
 void x86_init();
+void irq_handler();
 
 /* idt.c */
 extern void idt_init();
 extern void idt_register_irq(uint8_t, uint32_t);
+extern void idt_register_irq_raw(uint8_t, uint32_t);
 
 /* gdt.c */
 extern void gdt_init();
 
 /* pic.c */
 extern void pic_init();
+extern void pic_mask(uint8_t);
 
 /* cpu.s */
 extern void _irq_handler();
+extern void _dummy();
 
 /* io.s */
 extern void _io_port_write_byte(uint16_t, uint8_t);
@@ -49,3 +53,6 @@ extern uint32_t _io_port_read_long(uint16_t);
 /* io.s */
 extern void _io_wait();
 #define io_wait() _io_wait();
+
+extern uint8_t inportb(uint16_t portid);
+extern void outportb(uint16_t portid, uint8_t value);

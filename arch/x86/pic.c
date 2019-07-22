@@ -1,5 +1,7 @@
 #include <stdint.h>
+#include <stddef.h>
 #include "x86.h"
+#include "../../term.h"
 
 #define PIC1            0x20		    /* IO base address for master PIC */
 #define PIC2            0xA0		    /* IO base address for slave PIC */
@@ -48,9 +50,9 @@ IRQ 15 — ATA channel 2
 void pic_eoi(uint8_t irq)
 {
     if(irq >= 8)
-		outb(PIC2_COMMAND, PIC_EOI);
+        outportb(PIC2_COMMAND, PIC_EOI);
 
-	outb(PIC1_COMMAND, PIC_EOI);
+	outportb(PIC1_COMMAND, PIC_EOI);
 }
 
 /*
@@ -67,28 +69,30 @@ void pic_eoi(uint8_t irq)
  */
 static void pic_remap()
 {
+    terminal_writestring("Remapping pic\n");
+
     /* Save current masks */
     uint8_t m1, m2;
 
-    m1 = inb(PIC1_DATA);
-    m2 = inb(PIC2_DATA);
+    m1 = inportb(PIC1_DATA);
+    m2 = inportb(PIC2_DATA);
 
     /* Initialize the remapping */
-	outb_wait(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
-	outb_wait(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
+	outportb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
+	outportb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
 
     /* Send words */
-	outb_wait(PIC1_DATA, PIC1);                    // ICW2: Master PIC vector offset
-	outb_wait(PIC2_DATA, PIC2);                    // ICW2: Slave PIC vector offset
-	outb_wait(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-	outb_wait(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
-    outb_wait(PIC1_DATA, ICW4_8086);               // ICW4:
-	outb_wait(PIC2_DATA, ICW4_8086);               // ICW4:  
+	outportb(PIC1_DATA, PIC1);                    // ICW2: Master PIC vector offset
+	outportb(PIC2_DATA, PIC2);                    // ICW2: Slave PIC vector offset
+	outportb(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+	outportb(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
+    outportb(PIC1_DATA, ICW4_8086);               // ICW4:
+	outportb(PIC2_DATA, ICW4_8086);               // ICW4:  
 
 
     /* Restore masks */
-    outb_wait(PIC1_DATA, m1); 
-	outb_wait(PIC2_DATA, m2);
+    outportb(PIC1_DATA, 0); 
+	outportb(PIC2_DATA, 0);
 }
 
 /*
@@ -98,6 +102,10 @@ static void pic_remap()
  */
 void pic_mask(uint8_t irq)
 {
+    outportb(0x21, 0xfd);
+    outportb(0xa1, 0xff);
+    return;
+
     uint16_t port;
     uint8_t imr;
 
@@ -109,11 +117,11 @@ void pic_mask(uint8_t irq)
     }
 
     /* Read the IMR register */
-    imr = inb(port);
+    imr = inportb(port);
     imr |= (1 << irq);
 
     /* Write the irq to be masked */
-    outb(port, imr);
+    outportb(port, imr);
 }
 
 void pic_init()

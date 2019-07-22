@@ -6,7 +6,7 @@
 _idt_load:
 	push %ebp
 	movl %esp, %ebp
-	lidt 8(%esp)		//load idt
+	lidt 0x10f0    //8(%esp)		//load idt
 	movl %ebp, %esp
 	pop %ebp
 	ret
@@ -67,12 +67,12 @@ _go_to_protected:
 // Handle interrupts
 .global irq_handler
 .global _irq_handler
+.align 4
 .type _irq_handler, @function
 _irq_handler:
 	push %ebp
 	movl %esp, %ebp
-	cld
 	call irq_handler
 	movl %ebp, %esp
 	pop %ebp
-	ret
+	iretl
