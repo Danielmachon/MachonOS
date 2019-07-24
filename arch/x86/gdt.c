@@ -96,7 +96,7 @@ void gdt_init()
 	gdt_set(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 
 	/* Load the GDT */
-	_gdt_load(gdt_ptr);
+	_gdt_load(&gdt_ptr);
 
 	/* Reload segments */
 	_reload_segments();

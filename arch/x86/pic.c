@@ -50,9 +50,9 @@ IRQ 15 — ATA channel 2
 void pic_eoi(uint8_t irq)
 {
     if(irq >= 8)
-        outportb(PIC2_COMMAND, PIC_EOI);
+        outb(PIC2_COMMAND, PIC_EOI);
 
-	outportb(PIC1_COMMAND, PIC_EOI);
+	outb(PIC1_COMMAND, PIC_EOI);
 }
 
 /*
@@ -74,25 +74,25 @@ static void pic_remap()
     /* Save current masks */
     uint8_t m1, m2;
 
-    m1 = inportb(PIC1_DATA);
-    m2 = inportb(PIC2_DATA);
+    m1 = inb(PIC1_DATA);
+    m2 = inb(PIC2_DATA);
 
     /* Initialize the remapping */
-	outportb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
-	outportb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
+	outb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
+	outb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
 
     /* Send words */
-	outportb(PIC1_DATA, PIC1);                    // ICW2: Master PIC vector offset
-	outportb(PIC2_DATA, PIC2);                    // ICW2: Slave PIC vector offset
-	outportb(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-	outportb(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
-    outportb(PIC1_DATA, ICW4_8086);               // ICW4:
-	outportb(PIC2_DATA, ICW4_8086);               // ICW4:  
+	outb(PIC1_DATA, PIC1);                    // ICW2: Master PIC vector offset
+	outb(PIC2_DATA, PIC2);                    // ICW2: Slave PIC vector offset
+	outb(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
+	outb(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
+    outb(PIC1_DATA, ICW4_8086);               // ICW4:
+	outb(PIC2_DATA, ICW4_8086);               // ICW4:  
 
 
     /* Restore masks */
-    outportb(PIC1_DATA, 0); 
-	outportb(PIC2_DATA, 0);
+    outb(PIC1_DATA, 0); 
+	outb(PIC2_DATA, 0);
 }
 
 /*
@@ -102,8 +102,8 @@ static void pic_remap()
  */
 void pic_mask(uint8_t irq)
 {
-    outportb(0x21, 0xfd);
-    outportb(0xa1, 0xff);
+    outb(0x21, 0xfd);
+    outb(0xa1, 0xff);
     return;
 
     uint16_t port;
@@ -117,11 +117,11 @@ void pic_mask(uint8_t irq)
     }
 
     /* Read the IMR register */
-    imr = inportb(port);
+    imr = inb(port);
     imr |= (1 << irq);
 
     /* Write the irq to be masked */
-    outportb(port, imr);
+    outb(port, imr);
 }
 
 void pic_init()

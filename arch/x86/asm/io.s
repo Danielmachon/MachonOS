@@ -8,8 +8,8 @@ _io_port_write_byte:
 	movl %esp, %ebp
 	push %eax
 	push %edx
-	movl 8(%esp), %edx		// port id
-	movl 12(%esp), %eax		// value							
+	movl 8(%ebp), %edx		// port id
+	movl 12(%ebp), %eax		// value							
 	outb %al, %dx           // write value in %al to port in %dx
 	pop %edx
 	pop %eax
@@ -25,7 +25,7 @@ _io_port_read_byte:
 	movl %esp, %ebp
     push %eax
 	push %edx
-	movl 8(%esp), %edx      // port id
+	movl 8(%ebp), %edx      // port id
 	inb %dx, %al            // read value and store in return register
 	pop %edx
 	pop %eax

@@ -1,27 +1,34 @@
 //Assembly functions for low-level cpu initialization
 
-//Initialize the IDT
+// Initialize the IDT
 .global _idt_load
 .type _idt_load, @function
 _idt_load:
-	push %ebp
+	pushl %ebp
 	movl %esp, %ebp
-	lidt 0x10f0    //8(%esp)		//load idt
+	pushl %edx
+	movl 8(%ebp), %edx
+	lidt (%edx)		//load idt
+	popl %edx
 	movl %ebp, %esp
-	pop %ebp
+	popl %ebp
 	ret
 
-//Initialize the GDT
+// Initialize the GDT
 .global _gdt_load
 .type _gdt_load, @function
 _gdt_load:
-	push %ebp
+	pushl %ebp
 	movl %esp, %ebp
-	lgdt 8(%esp)		//load gdt
+	pushl %edx
+	movl 8(%ebp), %edx
+	lgdt (%edx)		//load gdt
+	popl %edx
 	movl %ebp, %esp
-	pop %ebp
+	popl %ebp
 	ret
 
+// Reload segments
 .global _reload_segments
 .type _reload_segments, @function
 _reload_segments:
@@ -41,30 +48,7 @@ flush:
 	pop %ebp
 	ret
 
-//Enable interrupts
-.global _enable_interrupts
-.type _enable_interrupts, @function
-_enable_interrupts:
-	push %ebp
-	movl %esp, %ebp
-	//Body
-	pop %ebp
-	ret
-
-.global _go_to_protected
-.type _go_to_protected, @function
-_go_to_protected:
-	push %ebp
-	push %eax
-	movl %esp, %ebp
-	movl %cr0, %eax
-	or 1, %eax
-	movl %eax, %cr0
-	pop %ebp
-	pop %eax
-	ret
-
-// Handle interrupts
+// Handle IRQ's
 .global irq_handler
 .global _irq_handler
 .align 4

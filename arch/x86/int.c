@@ -9,6 +9,6 @@ void irq_handler()
 
     pic_eoi(1);
 
-    uint8_t b = inportb(0x64);
-    uint8_t c = inportb(0x60);
+    uint8_t b = inb(0x64);
+    uint8_t c = inb(0x60);
 }
