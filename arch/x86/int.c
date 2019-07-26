@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
-#include "../../term.h"
+#include "../../kernel/term.h"
 #include "x86.h"
 
 void irq_handler()

@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "arch/arch.h"	//Architecture specific functions
+#include "../arch/arch.h"	//Architecture specific functions
 #include "term.h"		//Terminal output
 
 void kernel_init()

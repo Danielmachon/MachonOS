@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "x86.h"
-#include "../../term.h"
+#include "../../kernel/term.h"
 
 /* Initialize x86 arch */
 void x86_init()

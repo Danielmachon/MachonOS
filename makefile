@@ -1,9 +1,9 @@
-MAKE_DIR = $(PWD)
-ISODIR = $(PWD)/isodir
-BINDIR = $(PWD)/isodir/boot
+MAKE_DIR = $(PWD)/osdev/MachonOS
+ISODIR = $(MAKE_DIR)/isodir
+BINDIR = $(MAKE_DIR)/isodir/boot
 
-AS = i686-elf-as
-CC = i686-elf-gcc
+AS = /usr/local/cross/bin/i686-elf-as
+CC = /usr/local/cross/bin/i686-elf-gcc
 CFLAGS =-std=gnu99 -ffreestanding -Wall -Wextra
 
 ARCH_SRC_DIR := $(MAKE_DIR)/arch/x86
@@ -12,14 +12,18 @@ ARCH_ASM_DIR := $(MAKE_DIR)/arch/x86/asm
 INC=
 
 all: os
+	
+test: printf
+	
+printf-clean: printf-clean
 
 # top
 
-kernel.o: $(PWD)/kernel.c
-	$(CC) -c $(CFLAGS) $(PWD)/kernel.c $(INC)
+kernel.o: $(MAKE_DIR)/kernel/kernel.c
+	$(CC) -c $(CFLAGS) $(MAKE_DIR)/kernel/kernel.c $(INC)
 
-term.o: $(PWD)/term.c
-	$(CC) -c $(CFLAGS) $(PWD)/term.c $(INC)
+term.o: $(MAKE_DIR)/kernel/term.c
+	$(CC) -c $(CFLAGS) $(MAKE_DIR)/kernel/term.c $(INC)
 
 # arch
 
@@ -61,3 +65,9 @@ clean:
 	
 run:
 	qemu-system-i386 -kernel $(BINDIR)/MachonOS.bin
+
+printf: $(MAKE_DIR)/kernel/printf.c
+	   $(CC) $(MAKE_DIR)/kernel/printf.c -o printf -ffreestanding -nostdlib -g
+	
+printf-clean:
+	rm $(MAKE_DIR)/kernel/printf
